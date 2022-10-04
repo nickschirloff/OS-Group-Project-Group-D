@@ -9,14 +9,14 @@
 #include <unistd.h>
 #include "GetFileData.h"
 // Define the port and IP for easy use
-#define PORT 5002
+#define PORT 5000
 #define IP "127.0.0.1"
 
 int main() {
 
     int client_socket, return_socket;
     struct sockaddr_in server_address;
-    char buffer[10240];
+    char buffer[1024];
     char temp;
 
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -76,7 +76,7 @@ int main() {
         printf("%s",file_options);
 
         // Temp buffer so the real buffer doesn't get values it shouldn't
-        char temp_buffer[10240];
+        char temp_buffer[254];
         char msg_buffer[10240];
 
         // Reading the user's selected operation to perform
@@ -101,18 +101,15 @@ int main() {
                     //printf("%s", buffer);
                     read(client_socket, msg_buffer, sizeof(msg_buffer));
                     printf("%s", msg_buffer);
-                    scanf("%s",msg_buffer);
-                    send(client_socket, msg_buffer, sizeof(msg_buffer),0);
+                    scanf("%s",buffer);
+                    send(client_socket, buffer, sizeof(buffer),0);
                     // display based off of chosen record
 
                     break;
                 case 2:
                     read(client_socket, msg_buffer, sizeof(msg_buffer));
-                    //printf("%s", buffer);
-                    read(client_socket, msg_buffer, sizeof(msg_buffer));
-                    printf("%s", msg_buffer);
-                    scanf("%s",msg_buffer);
-                    send(client_socket, msg_buffer, sizeof(msg_buffer),0);
+                    printf("%s", buffer);
+
                     //pipe here
                     break;
                 case 3: 

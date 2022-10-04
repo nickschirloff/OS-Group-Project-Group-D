@@ -12,6 +12,7 @@
 #include <string.h>
 
 fileStruct GetFileData(char *fileName, char *columnName){
+    columnName=strtok(columnName, "\n");
     int numberOfRows=200;
     int numberOfColumns=0;
     int targetColumn;

@@ -11,7 +11,7 @@
 #include "GetFileData.h"
 //#include "forking.h"
 
-#define PORT 5002
+#define PORT 5000
 #define IP "127.0.0.1"
 #define MAX_CLIENTS 3
 
@@ -21,7 +21,7 @@ int main() {
 
     int server_socket, return_socket;
     int bind_return;
-    char buffer[10240];
+    char buffer[1024];
     pid_t child;
     int status;
 
@@ -103,7 +103,7 @@ int main() {
                 } else if(file_2 == NULL) {                         // If there is only one file
                     send(return_socket, file_1, sizeof(file_1), 0);
                 } else {                                            // If both files are present
-                    char temp[10240];
+                    char temp[254];
                     strcpy(temp, file_1);
                     strcat(temp, ", ");
                     strcat(temp, file_2);
@@ -131,8 +131,8 @@ int main() {
 
                 // Create buffer to hold data that will be stored into
                 // the actual string that is sent to client
-                char column_buffer[10240];
-                char full_column_string[10240];
+                char column_buffer[254];
+                char full_column_string[254];
                 // Copy first line so we can copy string
                 fgets(column_buffer, sizeof(column_buffer), file_pointer);
                 strcpy(full_column_string, column_buffer);
@@ -149,6 +149,9 @@ int main() {
                 printf("%s\n", selected_column);
 
                 //GetFileData("current_filename", selected_column);
+                printf("%lu %lu", strlen(current_filename), strlen(selected_column));
+                printf("%s %s", selected_column, current_filename);
+
                 fileStruct test = GetFileData(current_filename, selected_column);
                 printf("Num cols: %i\n", test.fileColumns);
                 // Pass current_filename and selected_column to Corey
@@ -182,7 +185,7 @@ int main() {
                             send(return_socket, msg, sizeof(msg), 0);
 
                             for(int uniques=0; uniques<test.numberOfUniques; uniques++){
-                                char tempMsg[100];
+                                char tempMsg[256];
                                 sprintf(tempMsg, "%d) %s\n",uniques, test.uniqueArray[uniques]);
                                 strcat(msg, tempMsg);
                             }
@@ -192,35 +195,27 @@ int main() {
 
 
                             valid_input = 1;
-
+                            break;
                         case 2: 
                             send(return_socket, "2", sizeof("2"), 0);
 
                             strcpy(msg,"Please choose which record to save:\n");
                             printf("Msg: %s", msg);
                             send(return_socket, msg, sizeof(msg), 0);
-                            for(int uniques=0; uniques<test.numberOfUniques; uniques++){
-                                char tempMsg[100];
-                                sprintf(tempMsg, "%d) %s\n",uniques, test.uniqueArray[uniques]);
-                                strcat(msg, tempMsg);
-                            }
-                            send(return_socket, msg, sizeof(msg), 0);
-                            read(return_socket, buffer, sizeof(buffer));
-                            printf("%s\n", test.uniqueArray[atoi(buffer)]);
 
                             valid_input = 1;
-
+                            break;
                         case 3:
                             send(return_socket, "3", sizeof("3"), 0);
 
                             valid_input = 1;
-
+                            break;
                         case 4:
                             send(return_socket, "4", sizeof("4"), 0);
                             valid_input = 1;
                             printf("Exiting...\n");
                             exit_opt = 1;
-                           break;
+                            break;
                         default:
                             send(return_socket, "-1", sizeof("-1"), 0);
                             valid_input = 0;
