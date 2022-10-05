@@ -14,6 +14,8 @@ void forked_process_piping_test(int column, char* stype, int wd[2], int fd[2], i
     char* ptr = buffer;
     // block until there is info in the what_pipe
     while((nbytes = read(wd[0], what, 80))==0){
+        sleep(1);
+        printf("stuck in while\n");
     }
     // exit if error in what_pipe
     if(nbytes < 0){

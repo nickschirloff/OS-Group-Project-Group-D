@@ -29,10 +29,11 @@ void MessageQueueSender(char* uniqueQueueName, fileStruct fileData){
 
     mq_send(queue, (const char *) &fileData, 512, 1);
     char buffer[512];
+    //printf("Rows in sender %d", fileData.fileRows);
     for (int row = 0; row < fileData.fileRows; row++) {
         for (int column = 0; column < fileData.fileColumns; column++) {
             strcpy(buffer, fileData.fileArray[row][column]);
-            //printf("%-s", fileData.fileArray[row][column]);
+           // printf("%-s", fileData.fileArray[row][column]);
             mq_send(queue, (const char *) &buffer, sizeof(buffer), 1);
         }
         //printf("\n");
@@ -40,4 +41,5 @@ void MessageQueueSender(char* uniqueQueueName, fileStruct fileData){
     //getchar();
     mq_close(queue);
     mq_unlink(uniqueQueueName);//destroyed when processes receiving close the queue
+    printf("Sender exited\n");
 }

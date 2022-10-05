@@ -26,6 +26,7 @@ char*** MessageQueueReceiver(char* queueName){
 
         };
         fileStruct fileData;
+
         mqd_t queue = mq_open(queueName, O_RDONLY); //creating read only queue
         if((mq_receive(queue, (char *) &fileData, 9000000000, NULL))==-1){
             perror("mq_receive");
@@ -43,7 +44,7 @@ char*** MessageQueueReceiver(char* queueName){
         char buffer[512];
         for (int row = 0; row < fileData.fileRows; row++) {
             for (int column = 0; column < fileData.fileColumns; column++) {
-                //printf("%-s", fileData.fileArray[row][column]);
+                //printf("%-s,", fileData.fileArray[row][column]);
                 mq_receive(queue, (char *) &buffer, 9000000000, NULL);
                 //printf("%-150s", buffer); //this sees line by line the file
                 fileArray[row][column] = calloc(strlen(buffer) + 1, sizeof(char));
@@ -54,5 +55,6 @@ char*** MessageQueueReceiver(char* queueName){
             }
             //printf("\n");
         }
+        printf("%s is finished receiving\n",queueName);
         return fileArray;
 }

@@ -8,8 +8,9 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <sys/wait.h>
 #include "GetFileData.h"
-//#include "forking.h"
+#include "forking.h"
 
 #define PORT 5000
 #define IP "127.0.0.1"
@@ -111,14 +112,14 @@ int main() {
                     //printf("Sending: %s\n", temp);
                     send(return_socket, temp, sizeof(temp), 0);
                 }
-                
+
                 // Read in client's selected file, check to make sure its valid
                 // Possibly need another while loop here
                 read(return_socket, buffer, sizeof(buffer));
-                
+
                 // Debug
                 //printf("Selected file: %s\n", buffer);
-                
+
                 if(strcmp(buffer, file_1) == 0) {
                     printf("File chosen: bookInfo.txt\n");
                     current_filename = file_1;
@@ -146,18 +147,33 @@ int main() {
                 // Getting user's column selection
                 read(return_socket, buffer, sizeof(buffer));
                 char *selected_column = buffer;
-                printf("%s\n", selected_column);
-
-                //GetFileData("current_filename", selected_column);
-                printf("%lu %lu", strlen(current_filename), strlen(selected_column));
-                printf("%s %s", selected_column, current_filename);
+//                printf("%s\n", selected_column);
+//
+//                //GetFileData("current_filename", selected_column);
+//                printf("%lu %lu", strlen(current_filename), strlen(selected_column));
+//                printf("%s %s", selected_column, current_filename);
 
                 fileStruct test = GetFileData(current_filename, selected_column);
+                pipeStruct pipeData;
+                pipeData.data_pipe=calloc(test.numberOfUniques, sizeof(int*));
+                pipeData.what_pipe=calloc(test.numberOfUniques, sizeof(int*));
+                for(int i=0;i<test.numberOfUniques;i++) {
+                    pipeData.data_pipe[i]=calloc(2, sizeof(int));
+                    pipeData.what_pipe[i]=calloc(2, sizeof(int));
+                }
                 printf("Num cols: %i\n", test.fileColumns);
                 // Pass current_filename and selected_column to Corey
                 // struct = GetFileData(current_filename, selected_column)
-                // fork
-                //forking(test);
+//                // fork
+                pid_t pid1=fork();
+                if(pid1==0) {
+                    forking(test, pipeData);
+                    printf("done forking\n");
+                    break;
+                }
+                sleep(5);
+                //forking(test, pipeData);
+
                 //printf("Num cols: %i\n", 15);
                 //gcc server.c GetFileData.c MessageQueueSender.c MessageQueueReceiver.c forking.c forked_process_piping_test.c -o ./main
 
@@ -177,7 +193,7 @@ int main() {
                         read(return_socket, buffer, sizeof(buffer));
                         user_option_selected = atoi(buffer);
                         switch(user_option_selected) {
-                        case 1: 
+                        case 1:
                             send(return_socket, "1", sizeof("1"), 0);
 
                             strcpy(msg, "Please choose which record to display:\n");
@@ -192,16 +208,35 @@ int main() {
                             send(return_socket, msg, sizeof(msg), 0);
                             read(return_socket, buffer, sizeof(buffer));
                             printf("%s\n", test.uniqueArray[atoi(buffer)]);
+                            char pipeBuffer[10240];
+                            char what[80];
+                            sprintf(what, "display");
+                            int ndata;
+                            ndata = write(pipeData.what_pipe[atoi(buffer)][1], what, 80);
+                            printf("here1 %d\n", ndata);
+                            printf("Buffer is\n %s\n", pipeBuffer);
+                            ndata = read(pipeData.data_pipe[atoi(buffer)][0], pipeBuffer, 10240);
+                            printf("here2 %d\n", ndata);
+                            printf("Buffer is\n %s\n", pipeBuffer);
+                            wait(0);
 
 
                             valid_input = 1;
                             break;
-                        case 2: 
+                        case 2:
                             send(return_socket, "2", sizeof("2"), 0);
 
                             strcpy(msg,"Please choose which record to save:\n");
                             printf("Msg: %s", msg);
                             send(return_socket, msg, sizeof(msg), 0);
+                            for(int uniques=0; uniques<test.numberOfUniques; uniques++){
+                                char tempMsg[256];
+                                sprintf(tempMsg, "%d) %s\n",uniques, test.uniqueArray[uniques]);
+                                strcat(msg, tempMsg);
+                            }
+                            send(return_socket, msg, sizeof(msg), 0);
+                            read(return_socket, buffer, sizeof(buffer));
+                            printf("%s\n", test.uniqueArray[atoi(buffer)]);
 
                             valid_input = 1;
                             break;
@@ -222,10 +257,10 @@ int main() {
                             break;
                     } // switch
                     } while(valid_input == 0);
-                    
+
                 } // While
             } else {
-                wait(&status);
+                wait(0);
             } // fork() if statement
         } // Main if statement
 

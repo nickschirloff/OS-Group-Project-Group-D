@@ -108,9 +108,11 @@ int main() {
                     break;
                 case 2:
                     read(client_socket, msg_buffer, sizeof(msg_buffer));
-                    printf("%s", buffer);
-
-                    //pipe here
+                    //printf("%s", buffer);
+                    read(client_socket, msg_buffer, sizeof(msg_buffer));
+                    printf("%s", msg_buffer);
+                    scanf("%s",buffer);
+                    send(client_socket, buffer, sizeof(buffer),0);
                     break;
                 case 3: 
                     //display here
